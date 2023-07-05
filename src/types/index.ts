@@ -1,4 +1,4 @@
-import { CreateCustomerDTO } from 'src/modules/users/dtos';
+import { CreateCustomerDTO } from 'src/modules/users/dto';
 
 export interface PayloadToken {
   id: number;

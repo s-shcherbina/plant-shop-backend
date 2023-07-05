@@ -1,9 +1,20 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthResponse } from 'src/types';
 import { AuthService } from './auth.service';
-import { CreateCustomerDTO, CreateUserDTO } from '../users/dtos';
-import { LoginCustomerDTO, LoginUserDTO } from './dtos';
+import { CreateCustomerDTO, CreateUserDTO } from '../users/dto';
+import { LoginCustomerDTO, LoginUserDTO } from './dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { UserId } from 'src/decorators/user.id.decorators';
 
 const maxAge = 60 * 24 * 60 * 60 * 1000;
 
@@ -26,7 +37,7 @@ export class AuthController {
   }
 
   @Post('register_user')
-  async registerrUser(
+  async registerUser(
     @Body() dto: CreateUserDTO,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponse> {
@@ -87,5 +98,20 @@ export class AuthController {
       httpOnly: true,
     });
     return response;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('user')
+  async updateUser(
+    @Body() dto: CreateUserDTO,
+    @UserId() id: number,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponse> {
+    const userData = await this.authService.updateUser(id, dto);
+    res.cookie('refreshToken', userData.refreshToken, {
+      maxAge: 60 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+    });
+    return userData;
   }
 }

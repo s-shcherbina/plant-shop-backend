@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { hash } from 'bcrypt';
 import { Repository } from 'typeorm';
-import { CreateUserDTO, CreateCustomerDTO } from './dtos';
+import { CreateUserDTO, CreateCustomerDTO } from './dto';
 import { UserEntity } from './entities/user.entity';
 
 @Injectable()
@@ -24,15 +24,15 @@ export class UsersService {
     return this.userRepository.findOneBy({ id });
   }
 
-  async findSuperUserByEmail(email: string): Promise<UserEntity> {
+  async findUserByEmail(email: string): Promise<UserEntity> {
     return this.userRepository.findOneBy({ email });
   }
 
-  async createUser(dto: CreateCustomerDTO): Promise<UserEntity> {
+  async createCustomer(dto: CreateCustomerDTO): Promise<UserEntity> {
     return this.userRepository.save({ ...dto });
   }
 
-  async createSuperUser(dto: CreateUserDTO): Promise<UserEntity> {
+  async createUser(dto: CreateUserDTO): Promise<UserEntity> {
     return this.userRepository.save({ ...dto });
   }
 
@@ -52,5 +52,15 @@ export class UsersService {
 
   async getAllUsers() {
     return await this.userRepository.find();
+  }
+
+  async updateUser(id: number, dto: Partial<CreateUserDTO>) {
+    await this.checkUserByPhoneAndId(id, dto.phone);
+    const user = await this.findUserByEmail(dto.email);
+    if (user && user.id != id)
+      throw new BadRequestException(
+        `${dto.email} закріплений за іншим користувачем!`,
+      );
+    await this.userRepository.update({ id }, { ...dto });
   }
 }

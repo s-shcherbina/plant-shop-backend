@@ -8,8 +8,8 @@ import { TokensService } from 'src/modules/tokens/tokens.service';
 import { AuthResponse } from 'src/types';
 import { UsersService } from 'src/modules/users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
-import { CreateCustomerDTO, CreateUserDTO } from '../users/dtos';
-import { LoginCustomerDTO, LoginUserDTO } from './dtos';
+import { CreateCustomerDTO, CreateUserDTO } from '../users/dto';
+import { LoginCustomerDTO, LoginUserDTO } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +33,7 @@ export class AuthService {
       throw new BadRequestException(
         `${dto.phone} закріплений за (іншим користувачем)!`,
       );
-    const user = await this.usersService.createUser(dto);
+    const user = await this.usersService.createCustomer(dto);
     return this.createResponse(user);
   }
 
@@ -44,10 +44,10 @@ export class AuthService {
 
     // if (user && user.role !== 'USER')
 
-    if (existUser?.role !== 'CUSTOMER')
+    if (existUser && existUser.role !== 'CUSTOMER')
       throw new BadRequestException(`${dto.phone} вже існує! Увійдіть!`);
     dto.role = 'USER';
-    const user = await this.usersService.findSuperUserByEmail(dto.email);
+    const user = await this.usersService.findUserByEmail(dto.email);
     if (user)
       throw new BadRequestException(`${dto.email} вже існує! Увійдіть!`);
     if (dto.email === process.env.MAIN_EMAIL) dto.role = 'ADMIN';
@@ -70,7 +70,7 @@ export class AuthService {
   }
 
   async loginUser(dto: LoginUserDTO): Promise<AuthResponse> {
-    const user = await this.usersService.findSuperUserByEmail(dto.email);
+    const user = await this.usersService.findUserByEmail(dto.email);
     if (!user)
       throw new BadRequestException(
         `${dto.email} незакріплений за жодним користувачем!`,
@@ -102,5 +102,11 @@ export class AuthService {
     } catch (e) {
       throw new UnauthorizedException(`Не авторизований`);
     }
+  }
+
+  async updateUser(id: number, dto: CreateUserDTO): Promise<AuthResponse> {
+    await this.usersService.updateUser(id, dto);
+    const user = await this.usersService.findUserById(id);
+    return await this.createResponse(user);
   }
 }
