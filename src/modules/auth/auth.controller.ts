@@ -101,9 +101,24 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Patch('customer')
+  async updateCustomer(
+    @Body() dto: Partial<CreateCustomerDTO>,
+    @UserId() id: number,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponse> {
+    const customerData = await this.authService.updateCustomer(id, dto);
+    res.cookie('refreshToken', customerData.refreshToken, {
+      maxAge: 60 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+    });
+    return customerData;
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Patch('user')
   async updateUser(
-    @Body() dto: CreateUserDTO,
+    @Body() dto: Partial<CreateUserDTO>,
     @UserId() id: number,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponse> {

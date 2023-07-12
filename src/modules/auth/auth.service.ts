@@ -19,9 +19,14 @@ export class AuthService {
   ) {}
 
   async createResponse(user: UserEntity): Promise<AuthResponse> {
-    // const { id, role, password, email, createdAt, ...userData } = user;
-    const { id, role } = user;
-    const { email, password, token, createdAt, ...userData } = user;
+    // const { id, role } = user;
+    // const { id, role, ...rest } = user;
+    // const userData = { ...user, password: null };
+    // const;
+    // const { email, password, token, createdAt, ...userData } = user;
+
+    const { password, token, createdAt, ...userData } = user;
+    const { id, role } = userData;
     const tokens = this.tokensService.generateJwtTokens({ id, role });
     await this.tokensService.saveToken(tokens.refreshToken, id);
     return { userData, ...tokens };
@@ -104,7 +109,19 @@ export class AuthService {
     }
   }
 
-  async updateUser(id: number, dto: CreateUserDTO): Promise<AuthResponse> {
+  async updateCustomer(
+    id: number,
+    dto: Partial<CreateCustomerDTO>,
+  ): Promise<AuthResponse> {
+    await this.usersService.updateCustomer(id, dto);
+    const user = await this.usersService.findUserById(id);
+    return await this.createResponse(user);
+  }
+
+  async updateUser(
+    id: number,
+    dto: Partial<CreateUserDTO>,
+  ): Promise<AuthResponse> {
     await this.usersService.updateUser(id, dto);
     const user = await this.usersService.findUserById(id);
     return await this.createResponse(user);

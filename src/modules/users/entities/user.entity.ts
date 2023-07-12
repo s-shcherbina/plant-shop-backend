@@ -14,7 +14,7 @@ export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false, unique: true })
+  @Column({ nullable: false })
   phone: string;
 
   @Column({ nullable: false })

@@ -39,10 +39,9 @@ export class UsersService {
   async checkUserByPhoneAndId(id: number, phone: string) {
     const user = await this.findUserByPhone(phone);
     if (user && user.id != id)
-      if (user)
-        throw new BadRequestException(
-          `${phone} закріплений за іншим користувачем!`,
-        );
+      throw new BadRequestException(
+        `${phone} закріплений за іншим користувачем!`,
+      );
   }
 
   async removeUser(id: number): Promise<string> {
@@ -52,6 +51,16 @@ export class UsersService {
 
   async getAllUsers() {
     return await this.userRepository.find();
+  }
+
+  async updateCustomer(id: number, dto: Partial<CreateCustomerDTO>) {
+    await this.checkUserByPhoneAndId(id, dto.phone);
+    // const user = await this.findUserByEmail(dto.email);
+    // if (user && user.id != id)
+    //   throw new BadRequestException(
+    //     `${dto.email} закріплений за іншим користувачем!`,
+    //   );
+    await this.userRepository.update({ id }, { ...dto });
   }
 
   async updateUser(id: number, dto: Partial<CreateUserDTO>) {
