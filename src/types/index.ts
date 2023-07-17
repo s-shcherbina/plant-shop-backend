@@ -1,4 +1,4 @@
-import { CreateCustomerDTO } from 'src/modules/users/dto';
+import { CreateUserDTO } from 'src/modules/users/dto';
 
 export interface PayloadToken {
   id: number;
@@ -6,7 +6,7 @@ export interface PayloadToken {
 }
 
 export interface AuthResponse {
-  userData: CreateCustomerDTO;
+  userData: CreateUserDTO;
   accessToken: string;
   refreshToken: string;
 }

@@ -53,13 +53,12 @@ export class UsersService {
     return await this.userRepository.find();
   }
 
+  async getOneUser(id: number) {
+    return await this.userRepository.findOneBy({ id });
+  }
+
   async updateCustomer(id: number, dto: Partial<CreateCustomerDTO>) {
     await this.checkUserByPhoneAndId(id, dto.phone);
-    // const user = await this.findUserByEmail(dto.email);
-    // if (user && user.id != id)
-    //   throw new BadRequestException(
-    //     `${dto.email} закріплений за іншим користувачем!`,
-    //   );
     await this.userRepository.update({ id }, { ...dto });
   }
 

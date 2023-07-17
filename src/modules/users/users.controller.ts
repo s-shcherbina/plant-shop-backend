@@ -18,6 +18,12 @@ export class UsersController {
     return this.usersService.getAllUsers();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('user')
+  async getOneUser(@UserId() id: number) {
+    return this.usersService.getOneUser(id);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Delete(':id')

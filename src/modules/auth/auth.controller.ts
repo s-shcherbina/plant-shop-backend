@@ -36,7 +36,8 @@ export class AuthController {
     return userData;
   }
 
-  @Post('register_user')
+  @UseGuards(JwtAuthGuard)
+  @Patch('register_user')
   async registerUser(
     @Body() dto: CreateUserDTO,
     @Res({ passthrough: true }) res: Response,

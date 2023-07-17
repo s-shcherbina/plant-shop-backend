@@ -18,15 +18,12 @@ export class AuthService {
     private readonly tokensService: TokensService,
   ) {}
 
-  async createResponse(user: UserEntity): Promise<AuthResponse> {
-    // const { id, role } = user;
-    // const { id, role, ...rest } = user;
-    // const userData = { ...user, password: null };
-    // const;
-    // const { email, password, token, createdAt, ...userData } = user;
-
-    const { password, token, createdAt, ...userData } = user;
+  async createResponse(userData: UserEntity): Promise<AuthResponse> {
     const { id, role } = userData;
+    delete userData.password;
+    delete userData.token;
+    delete userData.createdAt;
+
     const tokens = this.tokensService.generateJwtTokens({ id, role });
     await this.tokensService.saveToken(tokens.refreshToken, id);
     return { userData, ...tokens };
@@ -44,21 +41,18 @@ export class AuthService {
 
   async registerUser(dto: CreateUserDTO): Promise<AuthResponse> {
     const existUser = await this.usersService.findUserByPhone(dto.phone);
-
-    console.log(existUser?.role);
-
-    // if (user && user.role !== 'USER')
-
     if (existUser && existUser.role !== 'CUSTOMER')
       throw new BadRequestException(`${dto.phone} вже існує! Увійдіть!`);
     dto.role = 'USER';
+
     const user = await this.usersService.findUserByEmail(dto.email);
     if (user)
       throw new BadRequestException(`${dto.email} вже існує! Увійдіть!`);
     if (dto.email === process.env.MAIN_EMAIL) dto.role = 'ADMIN';
 
     dto.password = await this.usersService.hashPassword(dto.password);
-    const newUser = await this.usersService.createUser(dto);
+    await this.usersService.updateUser(existUser.id, dto);
+    const newUser = await this.usersService.findUserById(existUser.id);
     return this.createResponse(newUser);
   }
 
@@ -70,7 +64,7 @@ export class AuthService {
       );
     return this.createResponse({
       ...user,
-      role: `CUSTOMER ${user.role.slice(0, 1)}`,
+      role: `CUSTOMER ${user.role}`,
     });
   }
 
